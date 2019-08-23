@@ -21,12 +21,15 @@ def read(*paths):
 PACKAGE = 'dataflows_aws'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
-    'six>=1.9',
-    'dataflows>=0.0.57',
+    'six',
+    'boto3',
+    'dataflows',
 ]
 TESTS_REQUIRE = [
-    'pylama',
+    'moto[server]',
+    'pytest-cov',
     'pytest',
+    'pylama',
     'mock',
     'tox',
 ]

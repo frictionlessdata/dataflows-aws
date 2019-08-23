@@ -18,6 +18,11 @@ install:
   - make install
   - pip install coveralls
 
+before_script:
+  - moto_server &
+  - sleep 10
+  - curl localhost:5000
+
 script:
   - make test
 

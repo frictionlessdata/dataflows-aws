@@ -36,8 +36,8 @@ class S3Dumper(FileDumper):
     def write_file_to_output(self, filename, path, allow_create_bucket=True):
 
         # Prepare content_type and key
-        content_type, _ = self._content_type or mimetypes.guess_type(key) or 'text/plain'
         key = _generate_key(path, self._base_path, self._package)
+        content_type, _ = self._content_type or mimetypes.guess_type(key) or 'text/plain'
 
         try:
 

@@ -1,5 +1,5 @@
-import os
 import boto3
+from .. import config
 
 
 # Module API
@@ -9,7 +9,7 @@ def change_acl_on_s3(bucket, acl, path='', endpoint_url=None):
     def func(package):
 
         # Prepare client
-        s3_url = endpoint_url or os.environ.get('S3_ENDPOINT_URL')
+        s3_url = endpoint_url or config.S3_ENDPOINT_URL
         s3_client = boto3.client('s3', endpoint_url=s3_url)
 
         # Change ACL

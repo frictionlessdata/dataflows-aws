@@ -8,6 +8,11 @@ from moto import mock_s3
 from dataflows_aws import change_acl_on_s3
 
 
+# Setup
+
+os.environ['S3_ENDPOINT_URL'] = 'http://localhost:5000'
+
+
 # Tests
 
 def test_change_acl_on_s3(s3_client, bucket):
@@ -33,7 +38,8 @@ def test_change_acl_on_s3(s3_client, bucket):
     change_acl_on_s3(
         bucket=bucket,
         acl='private',
-        path='my/private/datasets')('package')
+        path='my/private/datasets',
+        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
 
     # Assert only public contents are public
     for path in paths:
@@ -48,33 +54,11 @@ def test_change_acl_on_s3_handles_non_existing_keys(s3_client, bucket):
     change_acl_on_s3(
         bucket=bucket,
         acl='private',
-        path='my/non-existing/datasets')('package')
+        path='my/non-existing/datasets',
+        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
 
 
 def test_change_acl_on_s3_no_path_provided(s3_client, bucket):
-
-    # Prepare paths
-    paths = [
-        'my/private/datasets/file_1.csv'
-        'my/private/datasets/file_2.csv'
-    ]
-
-    # Fill the S3 bucket
-    for path in paths:
-        s3_client.put_object(Body='body', Bucket=bucket, Key=path, ACL='public-read')
-
-    # Set private ACL using the processor
-    change_acl_on_s3(
-        bucket=bucket,
-        acl='private')('package')
-
-    # Assert everything is private now
-    for path in paths:
-        url = '{}/{}/{}'.format(os.environ['S3_ENDPOINT_URL'], bucket, path)
-        assert requests.get(url).status_code == 403
-
-
-def test_change_acl_on_s3_endpoint_url_provided(s3_client, bucket):
 
     # Prepare paths
     paths = [
@@ -115,7 +99,8 @@ def test_change_acl_on_s3_handles_more_than_1000_files(s3_client, bucket):
     change_acl_on_s3(
         bucket=bucket,
         acl='private',
-        path='my/private/datasets')('package')
+        path='my/private/datasets',
+        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
 
     # Assert everything is private now
     for path in paths:
@@ -127,7 +112,6 @@ def test_change_acl_on_s3_handles_more_than_1000_files(s3_client, bucket):
 
 @pytest.fixture
 def s3_client():
-    os.environ['S3_ENDPOINT_URL'] = 'http://localhost:5000'
     s3_client = boto3.client('s3', endpoint_url=os.environ.get('S3_ENDPOINT_URL'))
     return s3_client
 

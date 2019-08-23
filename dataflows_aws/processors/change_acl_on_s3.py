@@ -4,13 +4,13 @@ import boto3
 
 # Module API
 
-def change_acl_on_s3(bucket, acl, path):
+def change_acl_on_s3(bucket, acl, path='', endpoint_url=None):
 
     def func(package):
 
         # Prepare client
-        endpoint_url = os.environ.get('S3_ENDPOINT_URL')
-        s3_client = boto3.client('s3', endpoint_url=endpoint_url)
+        s3_url = endpoint_url or os.environ.get('S3_ENDPOINT_URL')
+        s3_client = boto3.client('s3', endpoint_url=s3_url)
 
         # Change ACL
         # list_objects returns max 1000 keys (even if MaxKeys is >1000)

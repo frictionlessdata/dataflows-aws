@@ -34,8 +34,10 @@ class S3Dumper(FileDumper):
         return package
 
     def write_file_to_output(self, filename, path, allow_create_bucket=True):
-        key = _generate_key(path, self._base_path, self._package)
+
+        # Prepare content_type and key
         content_type, _ = self._content_type or mimetypes.guess_type(key) or 'text/plain'
+        key = _generate_key(path, self._base_path, self._package)
 
         try:
 
@@ -76,14 +78,11 @@ class S3Dumper(FileDumper):
 # Internal
 
 def _generate_key(file_path, base_path='', package={}):
-
-    # Format base path
     try:
         format_params = {'version': 'latest'}
         format_params.update(package)
         base_path = base_path.format(**format_params)
+        return os.path.join(base_path, file_path)
     except KeyError:
         log.exception('datapackage.json is missing a property')
         raise
-
-    return os.path.join(base_path, file_path)

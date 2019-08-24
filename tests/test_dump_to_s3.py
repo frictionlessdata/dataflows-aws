@@ -55,7 +55,6 @@ def test_dump_to_s3_non_existent_bucket(s3_client, bucket):
             bucket=bucket,
             acl='private',
             path='my/datapackage',
-            allow_create_bucket=True,
             endpoint_url=os.environ['S3_ENDPOINT_URL'],
         ),
     )

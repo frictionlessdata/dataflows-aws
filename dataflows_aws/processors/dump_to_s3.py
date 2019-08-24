@@ -29,15 +29,17 @@ class S3Dumper(FileDumper):
         # Create client
         self._s3_client = boto3.client('s3', endpoint_url=self._endpoint_url)
 
-    def process_datapackage(self, package):
-        super(S3Dumper, self).process_package(package)
-        self._package = package
-        return package
+    def process_datapackage(self, datapackage):
+        super(S3Dumper, self).process_datapackage(datapackage)
+        self._descirptor = datapackage.descriptor
+        return datapackage
 
     def write_file_to_output(self, filename, path, allow_create_bucket=True):
 
         # Prepare content_type and key
-        key = _generate_key(path, self._base_path, self._package)
+        # We get some paths as `./data.csv`
+        path = os.path.normpath(path)
+        key = _generate_key(path, self._base_path, self._descirptor)
         content_type, _ = self._content_type or mimetypes.guess_type(key) or 'text/plain'
 
         try:
@@ -59,8 +61,7 @@ class S3Dumper(FileDumper):
                 Key=key)
 
             # Calculate URL and return
-            return os.path.join(
-                self._endpoint_url, self._bucket, key)
+            return os.path.join(self._endpoint_url, self._bucket, key)
 
         except self._s3_client.exceptions.NoSuchBucket as exception:
 
@@ -78,10 +79,10 @@ class S3Dumper(FileDumper):
 
 # Internal
 
-def _generate_key(file_path, base_path='', package={}):
+def _generate_key(file_path, base_path='', descriptor={}):
     try:
         format_params = {'version': 'latest'}
-        format_params.update(package)
+        format_params.update(descriptor)
         base_path = base_path.format(**format_params)
         return os.path.join(base_path, file_path)
     except KeyError:

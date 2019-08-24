@@ -5,6 +5,7 @@ import random
 import string
 import requests
 from moto import mock_s3
+from dataflows import Flow, load
 from dataflows_aws import change_acl_on_s3
 
 
@@ -14,7 +15,6 @@ os.environ['S3_ENDPOINT_URL'] = 'http://localhost:5000'
 
 
 # Tests
-# TODO: rebase tests on actual dataflows calls
 
 def test_change_acl_on_s3(s3_client, bucket):
 
@@ -36,11 +36,16 @@ def test_change_acl_on_s3(s3_client, bucket):
         assert requests.get(url).status_code == 200
 
     # Set private ACL using the processor
-    change_acl_on_s3(
-        bucket=bucket,
-        acl='private',
-        path='my/private/datasets',
-        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
+    flow = Flow(
+        load('data/data.csv'),
+        change_acl_on_s3(
+            bucket=bucket,
+            acl='private',
+            path='my/private/datasets',
+            endpoint_url=os.environ['S3_ENDPOINT_URL'],
+        ),
+    )
+    flow.process()
 
     # Assert only public contents are public
     for path in paths:
@@ -52,11 +57,16 @@ def test_change_acl_on_s3_handles_non_existing_keys(s3_client, bucket):
 
     # Set private ACL using the processor
     # Assert not failing (does nothing)
-    change_acl_on_s3(
-        bucket=bucket,
-        acl='private',
-        path='my/non-existing/datasets',
-        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
+    flow = Flow(
+        load('data/data.csv'),
+        change_acl_on_s3(
+            bucket=bucket,
+            acl='private',
+            path='my/non-existing/datasets',
+            endpoint_url=os.environ['S3_ENDPOINT_URL'],
+        ),
+    )
+    flow.process()
 
 
 def test_change_acl_on_s3_no_path_provided(s3_client, bucket):
@@ -72,10 +82,15 @@ def test_change_acl_on_s3_no_path_provided(s3_client, bucket):
         s3_client.put_object(Body='body', Bucket=bucket, Key=path, ACL='public-read')
 
     # Set private ACL using the processor
-    change_acl_on_s3(
-        bucket=bucket,
-        acl='private',
-        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
+    flow = Flow(
+        load('data/data.csv'),
+        change_acl_on_s3(
+            bucket=bucket,
+            acl='private',
+            endpoint_url=os.environ['S3_ENDPOINT_URL'],
+        ),
+    )
+    flow.process()
 
     # Assert everything is private now
     for path in paths:
@@ -97,11 +112,16 @@ def test_change_acl_on_s3_handles_more_than_1000_files(s3_client, bucket):
         s3_client.put_object(Body='body', Bucket=bucket, Key=path, ACL='public-read')
 
     # Set private ACL using the processor
-    change_acl_on_s3(
-        bucket=bucket,
-        acl='private',
-        path='my/private/datasets',
-        endpoint_url=os.environ['S3_ENDPOINT_URL'])('package')
+    flow = Flow(
+        load('data/data.csv'),
+        change_acl_on_s3(
+            bucket=bucket,
+            acl='private',
+            path='my/private/datasets',
+            endpoint_url=os.environ['S3_ENDPOINT_URL'],
+        ),
+    )
+    flow.process()
 
     # Assert everything is private now
     for path in paths:

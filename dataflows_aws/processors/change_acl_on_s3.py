@@ -23,4 +23,8 @@ def change_acl_on_s3(bucket, acl, path='', endpoint_url=None):
                 s3_client.put_object_acl(Bucket=bucket, Key=obj['Key'], ACL=acl)
                 marker = obj['Key']
 
+        # Return to flow
+        yield package.pkg
+        yield from package
+
     return func

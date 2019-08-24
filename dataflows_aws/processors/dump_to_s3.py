@@ -68,8 +68,8 @@ class S3Dumper(FileDumper):
             # If you provided a custom endpoint url, we assume you are
             # using an s3 compatible server, in this case, creating a
             # bucket should be cheap and easy, so we can do it here
-            if config.S3_ENDPOINT_CUSTOM_URL and allow_create_bucket:
-                self.client.create_bucket(Bucket=self.bucket)
+            if self._endpoint_url != config.S3_ENDPOINT_URL_DEFAULT and allow_create_bucket:
+                self._s3_client.create_bucket(Bucket=self._bucket)
                 return self.write_file_to_output(
                     filename, path, allow_create_bucket=False)
 

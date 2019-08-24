@@ -43,6 +43,36 @@ def test_dump_to_s3(s3_client, bucket):
     assert contents == 'id,name\r\n1,english\r\n2,中国人\r\n'
 
 
+def test_dump_to_s3_non_existent_bucket(s3_client, bucket):
+
+    # Delete bucket
+    s3_client.delete_bucket(Bucket=bucket)
+
+    # Dump to S3 using the processor
+    flow = Flow(
+        load('data/data.csv'),
+        dump_to_s3(
+            bucket=bucket,
+            acl='private',
+            path='my/datapackage',
+            allow_create_bucket=True,
+            endpoint_url=os.environ['S3_ENDPOINT_URL'],
+        ),
+    )
+    flow.process()
+
+    # Check datapackage.json content
+    response = s3_client.get_object(Bucket=bucket, Key='my/datapackage/datapackage.json')
+    descriptor = json.loads(response['Body'].read().decode('utf-8'))
+    assert descriptor['resources'][0]['schema']['fields'][0]['name'] == 'id'
+    assert descriptor['resources'][0]['schema']['fields'][1]['name'] == 'name'
+
+    # Check data.csv content
+    response = s3_client.get_object(Bucket=bucket, Key='my/datapackage/data.csv')
+    contents = response['Body'].read().decode('utf-8')
+    assert contents == 'id,name\r\n1,english\r\n2,中国人\r\n'
+
+
 # Fixtures
 
 @pytest.fixture

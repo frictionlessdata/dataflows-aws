@@ -72,9 +72,9 @@ Changes ACL of object in given Bucket with given path aka prefix.
 
 #### Parameters
 
-* `bucket` - Name of the bucket where objects are stored
-* `acl` - Available options `'private'|'public-read'|'public-read-write'|'authenticated-read'|'aws-exec-read'|'bucket-owner-read'|'bucket-owner-full-control'`
-* `path` - Path (key/prefix) to the DataPackage.
+- `bucket` - Name of the bucket where objects are stored
+- `acl` - Available options `'private'|'public-read'|'public-read-write'|'authenticated-read'|'aws-exec-read'|'bucket-owner-read'|'bucket-owner-full-control'`
+- `path` - Path (key/prefix) to the DataPackage.
 - `endpoint_url` - api endpoint to allow using S3 compatible services (e.g. 'https://ams3.digitaloceanspaces.com')
 
 ## Contributing

@@ -14,7 +14,12 @@ class S3Dumper(FileDumper):
 
     def __init__(self, bucket, acl,
             path='', content_type=None,
-            add_filehash_to_path=False, endpoint_url=None,
+            add_filehash_to_path=False,
+            endpoint_url=None,
+            region_name=None,
+            aws_access_key_id=None,
+            aws_secret_access_key=None,
+            aws_session_token=None,
             **options):
 
         # Process options
@@ -27,7 +32,11 @@ class S3Dumper(FileDumper):
         self._add_filehash_to_path = add_filehash_to_path
 
         # Create client
-        self._s3_client = boto3.client('s3', endpoint_url=self._endpoint_url)
+        self._s3_client = boto3.client('s3', 
+            endpoint_url=self._endpoint_url, region_name=region_name,
+            aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+            aws_session_token=aws_session_token
+        )
 
     def process_datapackage(self, datapackage):
         super(S3Dumper, self).process_datapackage(datapackage)

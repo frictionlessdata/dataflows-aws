@@ -13,8 +13,15 @@ log = logging.getLogger(__name__)
 class S3Dumper(FileDumper):
 
     def __init__(self, bucket, acl,
-            path='', content_type=None,
-            add_filehash_to_path=False, endpoint_url=None,
+            path='',
+            content_type=None,
+            cache_control=None,
+            add_filehash_to_path=False,
+            endpoint_url=None,
+            region_name=None,
+            aws_access_key_id=None,
+            aws_secret_access_key=None,
+            aws_session_token=None,
             **options):
 
         # Process options
@@ -23,15 +30,20 @@ class S3Dumper(FileDumper):
         self._acl = acl
         self._base_path = path
         self._content_type = content_type
+        self._cache_control = cache_control
         self._endpoint_url = endpoint_url or config.S3_ENDPOINT_URL
         self._add_filehash_to_path = add_filehash_to_path
 
         # Create client
-        self._s3_client = boto3.client('s3', endpoint_url=self._endpoint_url)
+        self._s3_client = boto3.client('s3', 
+            endpoint_url=self._endpoint_url, region_name=region_name,
+            aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+            aws_session_token=aws_session_token
+        )
 
     def process_datapackage(self, datapackage):
         super(S3Dumper, self).process_datapackage(datapackage)
-        self._descirptor = datapackage.descriptor
+        self._descriptor = datapackage.descriptor
         return datapackage
 
     def write_file_to_output(self, filename, path, allow_create_bucket=True):
@@ -39,8 +51,8 @@ class S3Dumper(FileDumper):
         # Prepare content_type and key
         # We get some paths as `./data.csv`
         path = os.path.normpath(path)
-        key = _generate_key(path, self._base_path, self._descirptor)
-        content_type, _ = self._content_type or mimetypes.guess_type(key) or 'text/plain'
+        key = _generate_key(path, self._base_path, self._descriptor)
+        content_type, _ = (self._content_type, None) or mimetypes.guess_type(key) or ('text/plain', None)
 
         try:
 
@@ -58,6 +70,7 @@ class S3Dumper(FileDumper):
                 Body=open(filename, 'rb'),
                 Bucket=self._bucket,
                 ContentType=content_type,
+                CacheControl=self._cache_control,
                 Key=key)
 
             # Calculate URL and return
